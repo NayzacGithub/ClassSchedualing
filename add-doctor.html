@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Doctor</title>
+    <link rel="stylesheet" href="./static/style.css">
+</head>
+
+<body>
+    <nav class="bg-white shadow-xl w-full py-2 px-[150px]">
+        <div class="flex gap-8 text-sm">
+            <a href="./doctors.html" class="hover:scale-105 hover:font-bold transition-all font-bold ">Doctors</a>
+            <a href="./rooms.html" class="hover:scale-105 hover:font-bold transition-all ">Rooms</a>
+            <a href="./meeting_times.html" class="hover:scale-105 hover:font-bold transition-all ">Meeting
+                times</a>
+            <a href="./departments.html" class="hover:scale-105 hover:font-bold transition-all ">Departments</a>
+            <a href="./courses.html" class="hover:scale-105 hover:font-bold transition-all">Courses</a>
+
+            <a href="./schedule.html" class="hover:scale-105 hover:font-bold transition-all">Schedule</a></div>
+    </nav>
+    <main class="py-[25px] px-[150px]">
+        <div class="bg-white rounded-xl shadow-xl w-full p-4">
+            <div class="flex w-full justify-between">
+                <h1 class="font-bold my-auto">
+                    <a class="text-gray-400" href="./doctors.html">Doctors</a> - Add Doctor
+                </h1>
+            </div>
+            <hr class="mt-3">
+            <form action="/rooms" class="mt-4" method="POST">
+                <div class=" mt-2">
+                    <div class="grid grid-cols-2 gap-5">
+                        <div class="">
+                            <label for="fullName" class="form-label">Full name</label>
+                            <input type="text" placeholder="Doctor's full name" name="fullName" id="fullName"
+                                class="form-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg">Add Doctor</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>
