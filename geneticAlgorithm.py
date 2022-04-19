@@ -1,18 +1,13 @@
 import sqlite3
+
 import random as rnd
 import prettytable as pt
 import matplotlib.pyplot as plt
-from flask import Flask, render_template, request
 
 
-# Implement flask to show the result in web form
-app = Flask(__name__)
+def geneticAlgorithm():
 
-
-@app.route('/')
-def index():
-
-    population_size = 500
+    population_size = 12
     mutation_rate = 0.02
     crossover_rate = 0.8
     tournament_selection_size = 3
@@ -24,7 +19,6 @@ def index():
     class Data:
         ROOMS = [['Room 1', 25], ['Room 2', 45], [
             'Room 3', 35]]
-
         MEETING_TIMES = [['MT1', 'Sunday 9:00 - 10:00'],
                          ['MT2', 'Sunday 10:00 - 11:00'], ['MT3', 'Monday 10:00 - 11:00'], ]
 
@@ -32,71 +26,50 @@ def index():
             self._rooms = []
             self._meetingTimes = []
             self._instructors = []
-            INSTRUCTORS = []
+            self._courses = []
+            self._depts = []
 
             con = sqlite3.connect('class-scheduler.db')
-
             cursor = con.cursor()
-
             for row in cursor.execute('SELECT * FROM `instructors`'):
                 self._instructors.append(Instructor(row[0], row[1]))
-            cursor.close()
-            print(INSTRUCTORS)
-            for i in range(0, len(self.ROOMS)):
-                self._rooms.append(Room(self.ROOMS[i][0], self.ROOMS[i][1]))
-            for i in range(0, len(self.MEETING_TIMES)):
+
+            for row in cursor.execute('SELECT number,seatingCapacity FROM `rooms`'):
+                self._rooms.append(Room(row[0], row[1]))
+
+            for row in cursor.execute('SELECT * FROM `meeting_times`'):
                 self._meetingTimes.append(MeetingTime(
-                    self.MEETING_TIMES[i][0], self.MEETING_TIMES[i][1]))
+                    row[0], row[1] + " " + row[2] + " - " + row[3]))
 
-            course1 = Course(
-                'C1', '325K', [self._instructors[0], self._instructors[1]], 25)
+            for row in cursor.execute('SELECT * FROM `courses`'):
+                self._courses.append(
+                    Course(id=row[0], number=row[1], name=row[2], maxNumberOfStudents=row[3]))
 
-            course2 = Course(
-                'C2', '319K', [self._instructors[0], self._instructors[1], self._instructors[2]], 35)
+            for row in cursor.execute('SELECT * FROM `departments`'):
+                self._depts.append(Department(id=row[0], name=row[1]))
+            cursor.close()
 
-            course3 = Course(
-                'C3', '462K', [self._instructors[0], self._instructors[1]], 25)
-
-            course4 = Course(
-                'C4', '464K', [self._instructors[2], self._instructors[3]], 30)
-
-            course5 = Course(
-                'C5', '360C', [self._instructors[3]], 35)
-
-            course6 = Course(
-                'C6', '303K', [self._instructors[0], self._instructors[2]], 45)
-
-            course7 = Course(
-                'C7', '303L', [self._instructors[1], self._instructors[3]], 45)
-
-            self._courses = [course1, course2, course3,
-                             course4, course5, course6, course7]
-            dept1 = Department("MATH", [course1, course3])
-            dept2 = Department("EE", [course2, course4, course5])
-            dept3 = Department("PHY", [course6, course7])
-
-            self._depts = [dept1, dept2, dept3]
             self._numberOfClasses = 0
             for i in range(0, len(self._depts)):
                 self._numberOfClasses += len(self._depts[i].get_courses())
 
-            def get_rooms():
-                return self._rooms
+        def get_rooms(self):
+            return self._rooms
 
-            def get_meetingTimes():
-                return self._meetingTimes
+        def get_meetingTimes(self):
+            return self._meetingTimes
 
-            def get_instructors():
-                return self._instructors
+        def get_instructors(self):
+            return self._instructors
 
-            def get_courses():
-                return self._courses
+        def get_courses(self):
+            return self._courses
 
-            def get_depts():
-                return self._depts
+        def get_depts(self):
+            return self._depts
 
-            def get_numberOfClasses():
-                return self._numberOfClasses
+        def get_numberOfClasses(self):
+            return self._numberOfClasses
 
         def get_depts(self):
             return self._depts
@@ -221,7 +194,6 @@ def index():
                     crossoverSchedule.get_classes(
                     )[i] = schedule2.get_classes()[i]
             # print(len(schedule1.get_classes()))
-
             return crossoverSchedule
 
         def _mutate_schedule(self, mutateSchedule: Schedule):
@@ -229,7 +201,6 @@ def index():
             for i in range(0, len(mutateSchedule.get_classes())):
                 if(mutation_rate > rnd.random()):
                     mutateSchedule.get_classes()[i] = schedule.get_classes()[i]
-
             return mutateSchedule
 
         def _select_tournament_population(self, population):
@@ -261,6 +232,12 @@ def index():
             self._instructors = instructors
             self._maxNumberOfStudents = maxNumberOfStudents
 
+        def __init__(self, id, number, name, maxNumberOfStudents):
+            self._id = id
+            self._number = number
+            self._name = name
+            self._maxNumberOfStudents = maxNumberOfStudents
+
         def get_number(self):
             return self._number
 
@@ -268,7 +245,20 @@ def index():
             return self._name
 
         def get_instructors(self):
+            self.fetch_instructors()
             return self._instructors
+
+        def fetch_instructors(self):
+            # Fetch instructors from database
+            import sqlite3
+            con = sqlite3.connect('class-scheduler.db')
+            cur = con.cursor()
+            cur.execute(
+                'SELECT * FROM instructors WHERE id IN (SELECT doctor_id FROM course_instructors WHERE course_id = ?)', (self._id,))
+            instructors = []
+            for row in cur:
+                instructors.append(Instructor(row[0], row[1]))
+            self._instructors = instructors
 
         def get_maxNumberOfStudents(self):
             return self._maxNumberOfStudents
@@ -284,11 +274,29 @@ def index():
             self._name = name
             self._courses = courses
 
+        def __init__(self, id, name):
+            self._id = id
+            self._name = name
+
         def get_name(self):
             return self._name
 
         def get_courses(self):
+            self.fetch_courses()
             return self._courses
+
+        def fetch_courses(self):
+            # Fetch courses from database
+            import sqlite3
+            con = sqlite3.connect('class-scheduler.db')
+            cur = con.cursor()
+            cur.execute(
+                'SELECT * FROM courses WHERE department_id = ?', (self._id,))
+            courses = []
+            for row in cur:
+                courses.append(Course(id=row[0], number=row[1],
+                                      name=row[2], maxNumberOfStudents=row[3]))
+            self._courses = courses
 
     class Instructor:
         def __init__(self, id, name):
@@ -337,12 +345,12 @@ def index():
         def set_room(self, room): self._room = room
 
         def __str__(self):
-            return str(self._dept.get_name()) + "," + str(self._course.get_number()) + "," + str(self._room.get_number()) + "," + str(self._instructor.get_id()) + "," + str(self._meetingTime.get_id())
+            return str(self._department.get_name()) + "," + str(self._course.get_number()) + "," + str(self._room.get_number()) + "," + str(self._instructor.get_id()) + "," + str(self._meetingTime.get_id())
 
     class DisplayManager:
         def print_available_data(self):
             print("> All Available Data")
-            self.print_dept()
+            
             self.print_course()
             self.print_room()
             self.print_instructor()
@@ -424,9 +432,7 @@ def index():
                     classes[i].get_instructor().get_name(),
                     classes[i].get_meetingTime().get_time()
                 ])
-
             print(table)
-            return testTable
 
     data = Data()
     displayManager = DisplayManager()
@@ -448,14 +454,7 @@ def index():
         print("\n> Fitness score: " +
               str(population.get_schedules()[0].get_fitness()))
         fitnessOverTime.append(population.get_schedules()[0].get_fitness())
+        if(generationNumber > 300 ):
+            return False
     print("\n\n")
-
-    return render_template('index.html', data=(population.get_schedules()[0]))
-
-
-@app.route('/style.css')
-def style():
-    return app.send_static_file('style.css')
-
-
-app.run(debug=True)
+    return (population.get_schedules()[0])

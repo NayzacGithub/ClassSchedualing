@@ -6,20 +6,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule</title>
-    <link rel="stylesheet" href="./static/style.css">
+    <link rel="stylesheet" href="{{url_for('style')}}">
 </head>
 
 <body class="bg-gray-100">
     <nav class="bg-white shadow-xl w-full py-2 px-[150px]">
-        <div class="flex gap-8 text-sm">
-            <a href="./doctors.html" class="hover:scale-105 hover:font-bold transition-all ">Doctors</a>
-            <a href="./rooms.html" class="hover:scale-105 hover:font-bold transition-all  ">Rooms</a>
-            <a href="./meeting_times.html" class="hover:scale-105 hover:font-bold transition-all ">Meeting
+        <div class="flex gap-8 w-full">
+            <a href="{{url_for('doctorsIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto">Doctors</a>
+            <a href="{{url_for('roomsIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto ">Rooms</a>
+            <a href="{{url_for('meetingTimesIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto">Meeting
                 times</a>
-            <a href="./departments.html"
-                class="hover:scale-105 hover:font-bold transition-all font-bold ">Departments</a>
-            <a href="./courses.html" class="hover:scale-105 hover:font-bold transition-all ">Courses</a>
-            <a href="./schedule.html" class="hover:scale-105 hover:font-bold transition-all">Schedule</a>
+            <a href="{{url_for('departmentsIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto font-bold ">Departments</a>
+            <a href="{{url_for('coursesIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto">Courses</a>
+            <a href="{{url_for('scheduleIndex')}}"
+                class="hover:scale-105 hover:font-bold transition-all my-auto text-white bg-green-500 rounded hover:shadow-lg px-4 py-1 justify-self-end ml-auto">Schedule</a>
         </div>
     </nav>
     <main class="py-[25px] px-[150px] ">
@@ -28,7 +33,7 @@
                 <h1 class="font-bold my-auto">
                     Departments
                 </h1>
-                <a href="./add-department.html"
+                <a href="{{url_for('createDepartment')}}"
                     class="py-1 bg-green-400 px-4 font-semibold text-white rounded-lg shadow hover:scale-105 hover:shadow-lg transition-all cursor-pointer">
                     Add department</a>
             </div>
@@ -45,20 +50,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for department in departments %}
                     <tr>
-                        <td class="px-2 py-1 border text-center">1</td>
-                        <td class="px-2 py-1 border text-center">Math</td>
+                        <td class="px-2 py-1 border text-center">{{department.get_id()}}</td>
+                        <td class="px-2 py-1 border text-center">{{department.get_name()}}</td>
                         <td class="px-2 py-1 border text-">
                             <div class="flex gap-1 text-[8px] mx-auto justify-center flex-wrap">
+                                {% for course in department.get_courses() %}
                                 <div
                                     class="bg-indigo-500 text-white px-1 py-[2px] rounded-lg cursor-pointer shadow hover:shadow-xl hover:scale-125 hover:mx-1 transition-all">
-                                    MT129</div>
-                                <div
-                                    class="bg-indigo-500 text-white px-1 py-[2px] rounded-lg cursor-pointer shadow hover:shadow-xl hover:scale-125 hover:mx-1 transition-all">
-                                    MT131</div>
-                                <div
-                                    class="bg-indigo-500 text-white px-1 py-[2px] rounded-lg cursor-pointer shadow hover:shadow-xl hover:scale-125 hover:mx-1 transition-all">
-                                    MT132</div>
+                                    {{course.get_number()}}</div>
+                                {% endfor %}
                             </div>
                         </td>
                         <td
@@ -71,15 +73,21 @@
                         </td>
                         <td
                             class="text-red-400  text-center border hover:text-red-500 hover:scale-110 hover:shadow-lg transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto my-auto cursor-pointer"
-                                viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                    clip-rule="evenodd" />
-                            </svg>
+                            <form action="{{url_for('deleteDepartment',id=department.get_id())}}" method="post">
+                                <button type="submit">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 mx-auto my-auto cursor-pointer" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </form>
                         </td>
                     </tr>
-
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
